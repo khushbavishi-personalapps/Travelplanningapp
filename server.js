@@ -165,6 +165,29 @@ async function handleApi(req, res) {
     return;
   }
 
+  if (req.method === "POST" && url.pathname === "/api/profile/delete") {
+    const body = await parseBody(req);
+    const profileId = cleanText(body.profileId, 80);
+    const state = await ensureState();
+
+    if (!state.profiles.some(p => p.id === profileId)) {
+      sendJson(res, 400, { error: "Profile not found." });
+      return;
+    }
+
+    state.profiles = state.profiles.filter(p => p.id !== profileId);
+    for (const slotId of Object.keys(state.votes)) {
+      delete state.votes[slotId][profileId];
+    }
+    for (const optionId of Object.keys(state.comments)) {
+      state.comments[optionId] = state.comments[optionId].filter(c => c.profileId !== profileId);
+    }
+    await saveState(state);
+    broadcast(state);
+    sendJson(res, 200, state);
+    return;
+  }
+
   if (req.method === "POST" && url.pathname === "/api/comment") {
     const body = await parseBody(req);
     const profileId = cleanText(body.profileId, 80);

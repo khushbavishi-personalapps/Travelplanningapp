@@ -352,6 +352,23 @@ function renderProfiles() {
     const pill = el("div", "profile-pill");
     pill.append(document.createTextNode(profile.name));
     pill.append(el("span", "", `${profile.age} yrs`));
+    const deleteBtn = el("button", "profile-delete", "×");
+    deleteBtn.type = "button";
+    deleteBtn.title = `Remove ${profile.name}`;
+    deleteBtn.addEventListener("click", async () => {
+      if (!confirm(`Remove ${profile.name} from the family roster?`)) return;
+      try {
+        state = await api("/api/profile/delete", { profileId: profile.id });
+        if (activeProfileId === profile.id) {
+          activeProfileId = state.profiles[0]?.id || "";
+          window.localStorage.setItem("activeProfileId", activeProfileId);
+        }
+        renderAll();
+      } catch (error) {
+        alert(error.message);
+      }
+    });
+    pill.append(deleteBtn);
     list.append(pill);
   }
 }
@@ -584,18 +601,23 @@ function renderAll() {
 
 document.querySelector("#profileForm").addEventListener("submit", async event => {
   event.preventDefault();
-  const form = new FormData(event.currentTarget);
+  const form = event.currentTarget;
+  const submitBtn = form.querySelector("button[type=submit]");
+  const data = new FormData(form);
+  submitBtn.disabled = true;
   try {
     state = await api("/api/profile", {
-      name: form.get("name"),
-      age: form.get("age")
+      name: data.get("name"),
+      age: data.get("age")
     });
     activeProfileId = state.profiles.at(-1).id;
     window.localStorage.setItem("activeProfileId", activeProfileId);
-    event.currentTarget.reset();
+    form.reset();
     renderAll();
   } catch (error) {
     alert(error.message);
+  } finally {
+    submitBtn.disabled = false;
   }
 });
 

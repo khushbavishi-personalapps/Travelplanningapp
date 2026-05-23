@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Kotagiri & Coonoor Family Itinerary</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <header class="hero">
+      <div class="hero__image" role="img" aria-label="Tea gardens in Coonoor"></div>
+      <div class="hero__content">
+        <p class="eyebrow">20 June to 25 June 2026</p>
+        <h1>Kotagiri & Coonoor family trip planner</h1>
+        <p>
+          Two relaxed base plans, day-wise choices, live family voting, comments,
+          hikes, gardens, tea, shopping, boating, local history, and villa games.
+        </p>
+        <div class="hero__facts">
+          <span>6 adults + baby</span>
+          <span>Nature-first</span>
+          <span>Slow mornings</span>
+          <span>Monsoon-aware</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="layout">
+      <aside class="panel sidebar">
+        <section>
+          <h2>Quick Account</h2>
+          <form id="profileForm" class="profile-form">
+            <label>
+              Name
+              <input name="name" type="text" placeholder="e.g. Papa" maxlength="40" required>
+            </label>
+            <label>
+              Age
+              <input name="age" type="number" min="0" max="120" placeholder="58" required>
+            </label>
+            <button type="submit">Add family member</button>
+          </form>
+          <label class="select-label">
+            Voting as
+            <select id="activeProfile"></select>
+          </label>
+        </section>
+
+        <section>
+          <h2>Family Roster</h2>
+          <div id="profileList" class="profile-list"></div>
+        </section>
+
+        <section>
+          <h2>Trip Notes</h2>
+          <div class="note-list">
+            <p><strong>Weather:</strong> June is early monsoon. Keep outdoor plans in the morning and carry rain layers.</p>
+            <p><strong>Roads:</strong> Start early from Coimbatore. Build buffers on ghat roads if it rains.</p>
+            <p><strong>E-pass:</strong> Tourist vehicles entering the Nilgiris currently need an online e-pass. Apply before leaving.</p>
+            <p><strong>Sharing:</strong> For family on separate mobile networks, deploy this dashboard and share the hosted URL.</p>
+            <p><strong>Baby rhythm:</strong> Each day has one soft slot for naps, feeding, and doing nothing without guilt.</p>
+          </div>
+        </section>
+
+        <section>
+          <h2>Villa Games</h2>
+          <div id="gamesList" class="games-list"></div>
+        </section>
+      </aside>
+
+      <section class="content">
+        <div class="toolbar">
+          <div>
+            <p class="eyebrow">Choose your base</p>
+            <h2 id="planTitle">Kotagiri Base</h2>
+          </div>
+          <div class="segmented" role="tablist" aria-label="Base itinerary">
+            <button class="base-tab active" data-plan="kotagiri" type="button">Stay in Kotagiri</button>
+            <button class="base-tab" data-plan="coonoor" type="button">Stay in Coonoor</button>
+          </div>
+        </div>
+
+        <div id="basePoll" class="base-poll"></div>
+        <div id="planSummary" class="plan-summary"></div>
+        <div id="days" class="days"></div>
+
+        <section class="panel sources">
+          <h2>Planning Sources & Checks</h2>
+          <p>
+            Timings and access can change locally, especially during rain or defence-area restrictions.
+            Confirm high-priority items with your stay host or driver the previous evening.
+          </p>
+          <div id="sourcesList" class="sources-grid"></div>
+        </section>
+      </section>
+    </main>
+
+    <template id="dayTemplate">
+      <article class="day-card">
+        <button class="day-card__head" type="button">
+          <span></span>
+          <strong></strong>
+          <small></small>
+        </button>
+        <div class="day-card__body"></div>
+      </article>
+    </template>
+
+    <script src="/app.js"></script>
+  </body>
+</html>

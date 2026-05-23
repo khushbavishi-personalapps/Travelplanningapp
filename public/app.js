@@ -50,6 +50,37 @@ const games = [
   "Baby-led playlist night: each adult chooses one song the baby must react to."
 ];
 
+const placeInfo = {
+  "kotagiri-20-afternoon-c": { label: "John Sullivan Memorial", mapQuery: "John Sullivan Memorial Kotagiri Nilgiris" },
+  "kotagiri-21-morning-a": { label: "Kodanad View Point", mapQuery: "Kodanad View Point Kotagiri Nilgiris" },
+  "kotagiri-21-morning-b": { label: "Longwood Shola", mapQuery: "Longwood Shola Kotagiri Nilgiris" },
+  "kotagiri-21-morning-c": { label: "Catherine Falls", mapQuery: "Catherine Falls Kotagiri Nilgiris", image: "https://commons.wikimedia.org/wiki/Special:FilePath/Catherine_Falls,_Kotagiri.jpg?width=600" },
+  "kotagiri-22-morning-a": { label: "Sim's Park", mapQuery: "Sims Park Coonoor Nilgiris", image: "https://commons.wikimedia.org/wiki/Special:FilePath/Sims_Park_Coonoor.jpg?width=600" },
+  "kotagiri-22-morning-b": { label: "Highfield Tea Factory", mapQuery: "Highfield Tea Factory Coonoor Nilgiris" },
+  "kotagiri-22-morning-c": { label: "Lamb's Rock", mapQuery: "Lambs Rock Viewpoint Coonoor Nilgiris" },
+  "kotagiri-22-afternoon-b": { label: "Dolphin's Nose", mapQuery: "Dolphins Nose Coonoor Nilgiris", image: "https://commons.wikimedia.org/wiki/Special:FilePath/Dolphin%27s_Nose%2C_Coonoor.jpg?width=600" },
+  "kotagiri-23-morning-b": { label: "John Sullivan Memorial", mapQuery: "John Sullivan Memorial Kotagiri Nilgiris" },
+  "kotagiri-23-afternoon-c": { label: "Catherine / Elk Falls", mapQuery: "Catherine Falls Kotagiri Nilgiris" },
+  "kotagiri-24-morning-a": { label: "Nilgiri Mountain Railway", mapQuery: "Nilgiri Mountain Railway Coonoor Station", image: "https://commons.wikimedia.org/wiki/Special:FilePath/Nilgiri_Mountain_Railway_train_near_Coonoor.jpg?width=600" },
+  "kotagiri-24-morning-b": { label: "Ooty Lake Boating", mapQuery: "Ooty Lake Udhagamandalam Nilgiris", image: "https://commons.wikimedia.org/wiki/Special:FilePath/Ooty_lake.jpg?width=600" },
+  "kotagiri-24-afternoon-a": { label: "Wellington MRC Museum", mapQuery: "Wellington Cantonment Madras Regimental Centre Coonoor" },
+  "coonoor-21-morning-a": { label: "Kodanad View Point", mapQuery: "Kodanad View Point Kotagiri Nilgiris" },
+  "coonoor-21-morning-b": { label: "Longwood Shola", mapQuery: "Longwood Shola Kotagiri Nilgiris" },
+  "coonoor-21-morning-c": { label: "Catherine Falls", mapQuery: "Catherine Falls Kotagiri Nilgiris", image: "https://commons.wikimedia.org/wiki/Special:FilePath/Catherine_Falls,_Kotagiri.jpg?width=600" },
+  "coonoor-21-afternoon-c": { label: "John Sullivan Memorial", mapQuery: "John Sullivan Memorial Kotagiri Nilgiris" },
+  "coonoor-22-morning-a": { label: "Sim's Park", mapQuery: "Sims Park Coonoor Nilgiris", image: "https://commons.wikimedia.org/wiki/Special:FilePath/Sims_Park_Coonoor.jpg?width=600" },
+  "coonoor-22-morning-b": { label: "Highfield Tea Factory", mapQuery: "Highfield Tea Factory Coonoor Nilgiris" },
+  "coonoor-22-morning-c": { label: "Lamb's Rock", mapQuery: "Lambs Rock Viewpoint Coonoor Nilgiris" },
+  "coonoor-22-afternoon-a": { label: "Dolphin's Nose", mapQuery: "Dolphins Nose Coonoor Nilgiris", image: "https://commons.wikimedia.org/wiki/Special:FilePath/Dolphin%27s_Nose%2C_Coonoor.jpg?width=600" },
+  "coonoor-23-morning-a": { label: "John Sullivan Memorial", mapQuery: "John Sullivan Memorial Kotagiri Nilgiris" },
+  "coonoor-23-morning-b": { label: "Tea Estate Walk — Kotagiri", mapQuery: "Tea Estate Walk Kotagiri Nilgiris" },
+  "coonoor-23-morning-c": { label: "Longwood Shola", mapQuery: "Longwood Shola Kotagiri Nilgiris" },
+  "coonoor-23-afternoon-b": { label: "Catherine Falls", mapQuery: "Catherine Falls Kotagiri Nilgiris" },
+  "coonoor-24-morning-a": { label: "Nilgiri Mountain Railway", mapQuery: "Nilgiri Mountain Railway Coonoor Station", image: "https://commons.wikimedia.org/wiki/Special:FilePath/Nilgiri_Mountain_Railway_train_near_Coonoor.jpg?width=600" },
+  "coonoor-24-morning-b": { label: "Ooty Lake Boating", mapQuery: "Ooty Lake Udhagamandalam Nilgiris", image: "https://commons.wikimedia.org/wiki/Special:FilePath/Ooty_lake.jpg?width=600" },
+  "coonoor-24-afternoon-a": { label: "Wellington MRC Museum", mapQuery: "Wellington Cantonment Madras Regimental Centre Coonoor" }
+};
+
 const itineraries = {
   kotagiri: {
     title: "Kotagiri Base",
@@ -260,8 +291,10 @@ const itineraries = {
 };
 
 let activePlan = "kotagiri";
+let activeView = "options";
 let state = { profiles: [], votes: {}, comments: {} };
 let activeProfileId = window.localStorage.getItem("activeProfileId") || "";
+let viewProfileId = "";
 
 function day(label, date, title, note, slots) {
   return { label, date, title, note, slots };
@@ -325,6 +358,32 @@ function votersFor(slotId, optionId) {
   return Object.entries(getSlotVotes(slotId))
     .filter(([, votedOptionId]) => votedOptionId === optionId)
     .map(([profileId]) => profileId);
+}
+
+function getWinningOptions(slotItem) {
+  const slotVotes = getSlotVotes(slotItem.id);
+  const totalVotes = Object.keys(slotVotes).length;
+  if (totalVotes === 0) {
+    return { options: slotItem.options, counts: {}, totalVotes: 0, noVotes: true };
+  }
+  const counts = {};
+  slotItem.options.forEach(o => { counts[o.id] = 0; });
+  Object.values(slotVotes).forEach(optId => {
+    if (optId in counts) counts[optId]++;
+  });
+  const maxVotes = Math.max(...Object.values(counts));
+  const winningIds = Object.entries(counts)
+    .filter(([, c]) => c === maxVotes && c > 0)
+    .map(([id]) => id);
+  if (!winningIds.length) {
+    return { options: slotItem.options, counts, totalVotes, noVotes: true };
+  }
+  return {
+    options: slotItem.options.filter(o => winningIds.includes(o.id)),
+    counts,
+    totalVotes,
+    noVotes: false
+  };
 }
 
 function renderProfiles() {
@@ -413,6 +472,28 @@ function renderPlan() {
     summary.append(tile);
   });
 
+  renderDays();
+}
+
+function renderDays() {
+  document.querySelectorAll(".view-tab").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.view === activeView);
+  });
+  document.querySelector("#mineControls").hidden = activeView !== "mine";
+  document.querySelector("#exportRow").hidden = activeView === "options";
+
+  if (activeView === "final") {
+    renderFinalItinerary();
+  } else if (activeView === "mine") {
+    renderMyControls();
+    renderMyItinerary();
+  } else {
+    renderDefaultDays();
+  }
+}
+
+function renderDefaultDays() {
+  const plan = itineraries[activePlan];
   const days = document.querySelector("#days");
   days.innerHTML = "";
   const template = document.querySelector("#dayTemplate");
@@ -436,6 +517,137 @@ function renderPlan() {
     });
 
     days.append(node);
+  });
+}
+
+function renderFinalItinerary() {
+  const plan = itineraries[activePlan];
+  const container = document.querySelector("#days");
+  container.innerHTML = "";
+
+  plan.days.forEach(dayItem => {
+    const card = el("article", "final-card");
+
+    const head = el("div", "final-card__head");
+    head.append(el("span", "final-date-badge", `${dayItem.label} ${dayItem.date}`));
+    head.append(el("strong", "", dayItem.title));
+    card.append(head);
+
+    dayItem.slots.forEach(slotItem => {
+      const section = el("div", "final-slot");
+      section.append(el("div", "final-slot__label", slotItem.title));
+
+      const { options: winOpts, counts, totalVotes, noVotes } = getWinningOptions(slotItem);
+
+      winOpts.forEach(option => {
+        const row = el("div", "final-option");
+        const top = el("div", "final-option__top");
+        top.append(el("strong", "", option.title));
+
+        if (!noVotes) {
+          const voteCount = counts[option.id] || 0;
+          const pct = totalVotes ? Math.round((voteCount / totalVotes) * 100) : 0;
+          top.append(el("span", "final-option__badge", `${voteCount} vote${voteCount !== 1 ? "s" : ""} · ${pct}%`));
+        } else {
+          top.append(el("span", "final-option__badge final-option__badge--empty", "No votes yet"));
+        }
+
+        row.append(top);
+        row.append(el("p", "final-option__desc", option.description));
+
+        if (placeInfo[option.id]) {
+          const mapLink = el("a", "map-link", "📍 Open in Maps");
+          mapLink.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(placeInfo[option.id].mapQuery)}`;
+          mapLink.target = "_blank";
+          mapLink.rel = "noreferrer";
+          row.append(mapLink);
+        }
+
+        section.append(row);
+      });
+
+      card.append(section);
+    });
+
+    container.append(card);
+  });
+}
+
+function renderMyControls() {
+  const select = document.querySelector("#viewProfile");
+  select.innerHTML = "";
+
+  state.profiles.forEach(profile => {
+    const option = document.createElement("option");
+    option.value = profile.id;
+    option.textContent = `${profile.name}, ${profile.age}`;
+    select.append(option);
+  });
+
+  if (!state.profiles.some(p => p.id === viewProfileId)) {
+    viewProfileId = state.profiles[0]?.id || "";
+  }
+  select.value = viewProfileId;
+}
+
+function renderMyItinerary() {
+  const container = document.querySelector("#days");
+  container.innerHTML = "";
+
+  if (!state.profiles.length) {
+    container.append(el("p", "empty-state", "No family members added yet. Add someone using the sidebar first."));
+    return;
+  }
+
+  if (!viewProfileId || !state.profiles.some(p => p.id === viewProfileId)) {
+    viewProfileId = state.profiles[0].id;
+  }
+
+  const person = state.profiles.find(p => p.id === viewProfileId);
+  const plan = itineraries[activePlan];
+
+  plan.days.forEach(dayItem => {
+    const card = el("article", "final-card");
+
+    const head = el("div", "final-card__head");
+    head.append(el("span", "final-date-badge", `${dayItem.label} ${dayItem.date}`));
+    head.append(el("strong", "", dayItem.title));
+    card.append(head);
+
+    dayItem.slots.forEach(slotItem => {
+      const section = el("div", "final-slot");
+      section.append(el("div", "final-slot__label", slotItem.title));
+
+      const votedId = (state.votes[slotItem.id] || {})[viewProfileId];
+      const votedOption = votedId ? slotItem.options.find(o => o.id === votedId) : null;
+
+      if (votedOption) {
+        const row = el("div", "final-option");
+        const top = el("div", "final-option__top");
+        top.append(el("strong", "", votedOption.title));
+        top.append(el("span", "final-option__badge final-option__badge--voted", `${person?.name || "Their"} choice`));
+        row.append(top);
+        row.append(el("p", "final-option__desc", votedOption.description));
+
+        if (placeInfo[votedOption.id]) {
+          const mapLink = el("a", "map-link", "📍 Open in Maps");
+          mapLink.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(placeInfo[votedOption.id].mapQuery)}`;
+          mapLink.target = "_blank";
+          mapLink.rel = "noreferrer";
+          row.append(mapLink);
+        }
+
+        section.append(row);
+      } else {
+        const row = el("div", "final-option final-option--empty");
+        row.textContent = "No vote yet for this slot";
+        section.append(row);
+      }
+
+      card.append(section);
+    });
+
+    container.append(card);
   });
 }
 
@@ -488,8 +700,16 @@ function renderOption(slotItem, option) {
   card.classList.toggle("selected", currentVote === option.id);
 
   const top = el("div", "option-card__top");
-  const heading = el("h4", "", option.title);
-  top.append(heading);
+  top.append(el("h4", "", option.title));
+
+  if (placeInfo[option.id]) {
+    const infoBtn = el("button", "info-btn", "ⓘ");
+    infoBtn.type = "button";
+    infoBtn.title = `Info & map: ${placeInfo[option.id].label}`;
+    infoBtn.addEventListener("click", () => showPlaceModal(option.id));
+    top.append(infoBtn);
+  }
+
   card.append(top);
 
   const tagRow = el("div", "tag-row");
@@ -539,7 +759,11 @@ function renderVoteArea(slotItem, option) {
   fill.style.width = `${percent}%`;
   bar.append(fill);
   line.append(bar);
-  line.append(el("strong", "", `${optionVoters.length}/${state.profiles.length || 6}`));
+
+  const voteLabel = total > 0
+    ? `${optionVoters.length}/${state.profiles.length || 6} · ${percent}%`
+    : `0/${state.profiles.length || 6}`;
+  line.append(el("strong", "", voteLabel));
 
   const voters = el("div", "voters", optionVoters.length ? optionVoters.map(profileName).join(", ") : "No votes yet");
   area.append(button, line, voters);
@@ -583,6 +807,107 @@ function renderComments(option) {
     wrap.append(item);
   });
   return wrap;
+}
+
+function showPlaceModal(optionId) {
+  const info = placeInfo[optionId];
+  if (!info) return;
+
+  document.querySelector("#placeModalTitle").textContent = info.label;
+
+  const img = document.querySelector("#placeModalImg");
+  if (info.image) {
+    img.src = info.image;
+    img.alt = info.label;
+    img.hidden = false;
+    img.onerror = () => { img.hidden = true; };
+  } else {
+    img.hidden = true;
+  }
+
+  const mapLink = document.querySelector("#placeModalMap");
+  mapLink.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(info.mapQuery)}`;
+
+  const modal = document.querySelector("#placeModal");
+  modal.hidden = false;
+  document.body.style.overflow = "hidden";
+}
+
+function downloadPDF() {
+  window.print();
+}
+
+function downloadICS() {
+  const plan = itineraries[activePlan];
+  const isMyView = activeView === "mine";
+
+  const dateMap = {
+    "20 Jun": "20260620",
+    "21 Jun": "20260621",
+    "22 Jun": "20260622",
+    "23 Jun": "20260623",
+    "24 Jun": "20260624",
+    "25 Jun": "20260625"
+  };
+
+  const slotTimes = {
+    "Morning": ["070000", "120000"],
+    "Afternoon": ["130000", "180000"],
+    "Night": ["190000", "210000"]
+  };
+
+  const lines = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//Nilgiris Family Trip 2026//EN",
+    "CALSCALE:GREGORIAN",
+    "METHOD:PUBLISH"
+  ];
+
+  plan.days.forEach(dayItem => {
+    const dateStr = dateMap[dayItem.date];
+    if (!dateStr) return;
+
+    dayItem.slots.forEach(slotItem => {
+      let chosenOption;
+
+      if (isMyView && viewProfileId) {
+        const votedId = (state.votes[slotItem.id] || {})[viewProfileId];
+        chosenOption = votedId ? slotItem.options.find(o => o.id === votedId) : null;
+      } else {
+        const { options: winOpts, noVotes } = getWinningOptions(slotItem);
+        chosenOption = noVotes ? null : winOpts[0];
+      }
+
+      if (!chosenOption) return;
+
+      const times = slotTimes[slotItem.title] || ["080000", "090000"];
+      const uid = `nilgiris-${slotItem.id}-${chosenOption.id}@trip2026`;
+      const desc = chosenOption.description.replace(/[\r\n,]/g, " ");
+
+      lines.push(
+        "BEGIN:VEVENT",
+        `UID:${uid}`,
+        `DTSTART;TZID=Asia/Kolkata:${dateStr}T${times[0]}`,
+        `DTEND;TZID=Asia/Kolkata:${dateStr}T${times[1]}`,
+        `SUMMARY:${chosenOption.title}`,
+        `DESCRIPTION:${desc}`,
+        "END:VEVENT"
+      );
+    });
+  });
+
+  lines.push("END:VCALENDAR");
+
+  const blob = new Blob([lines.join("\r\n")], { type: "text/calendar;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "nilgiris-trip-2026.ics";
+  document.body.append(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
 }
 
 function escapeHtml(value) {
@@ -632,6 +957,33 @@ document.querySelectorAll(".base-tab").forEach(button => {
     activePlan = button.dataset.plan;
     renderPlan();
   });
+});
+
+document.querySelectorAll(".view-tab").forEach(btn => {
+  btn.addEventListener("click", () => {
+    activeView = btn.dataset.view;
+    renderDays();
+  });
+});
+
+document.querySelector("#viewProfile").addEventListener("change", event => {
+  viewProfileId = event.target.value;
+  renderMyItinerary();
+});
+
+document.querySelector("#pdfBtn").addEventListener("click", downloadPDF);
+document.querySelector("#icsBtn").addEventListener("click", downloadICS);
+
+document.querySelector("#placeModalClose").addEventListener("click", () => {
+  document.querySelector("#placeModal").hidden = true;
+  document.body.style.overflow = "";
+});
+
+document.querySelector("#placeModal").addEventListener("click", event => {
+  if (event.target === event.currentTarget) {
+    event.currentTarget.hidden = true;
+    document.body.style.overflow = "";
+  }
 });
 
 renderGames();

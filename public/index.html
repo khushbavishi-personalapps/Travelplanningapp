@@ -82,6 +82,27 @@
 
         <div id="basePoll" class="base-poll"></div>
         <div id="planSummary" class="plan-summary"></div>
+
+        <div class="view-tabs-row">
+          <div class="view-segmented" role="tablist" aria-label="View mode">
+            <button class="view-tab active" data-view="options" type="button">All Choices</button>
+            <button class="view-tab" data-view="final" type="button">Final Itinerary</button>
+            <button class="view-tab" data-view="mine" type="button">My Preferred</button>
+          </div>
+        </div>
+
+        <div id="mineControls" class="mine-controls" hidden>
+          <label class="select-label" style="margin:0; min-width:180px;">
+            View itinerary for
+            <select id="viewProfile"></select>
+          </label>
+        </div>
+
+        <div id="exportRow" class="export-row" hidden>
+          <button id="pdfBtn" class="export-btn" type="button">⬇ Download PDF</button>
+          <button id="icsBtn" class="export-btn" type="button">⬇ Google Calendar (.ics)</button>
+        </div>
+
         <div id="days" class="days"></div>
 
         <section class="panel sources">
@@ -105,6 +126,19 @@
         <div class="day-card__body"></div>
       </article>
     </template>
+
+    <div id="placeModal" class="place-modal" hidden>
+      <div class="place-modal__box">
+        <div class="place-modal__header">
+          <strong id="placeModalTitle"></strong>
+          <button id="placeModalClose" class="place-modal__close" type="button">✕</button>
+        </div>
+        <img id="placeModalImg" src="" alt="" class="place-modal__img">
+        <div class="place-modal__body">
+          <a id="placeModalMap" href="" target="_blank" rel="noreferrer" class="map-link">📍 Open in Google Maps</a>
+        </div>
+      </div>
+    </div>
 
     <script src="/app.js"></script>
   </body>
